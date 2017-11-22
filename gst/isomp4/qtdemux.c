@@ -9329,7 +9329,7 @@ done:
 
   /* push based does not handle segments, so act accordingly here,
    * and warn if applicable */
-  if (!qtdemux->pullbased && !allow_pushbased_edts) {
+  if (!qtdemux->pullbased /* && !allow_pushbased_edts */) {
     GST_WARNING_OBJECT (qtdemux, "streaming; discarding edit list segments");
     /* remove and use default one below, we stream like it anyway */
     g_free (stream->segments);
