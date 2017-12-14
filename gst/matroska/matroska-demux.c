@@ -2529,6 +2529,14 @@ gst_matroska_demux_parse_tracks (GstMatroskaDemux * demux, GstEbmlRead * ebml)
 
   demux->tracks_parsed = TRUE;
 
+  demux->common.state = GST_MATROSKA_READ_STATE_DATA;
+  GST_DEBUG_OBJECT (demux, "signaling no more pads");
+  gst_element_no_more_pads (GST_ELEMENT (demux));
+  /* send initial segment - we wait till we know the first
+     incoming timestamp, so we can properly set the start of
+     the segment. */
+  demux->need_segment = TRUE;
+
   return ret;
 }
 
@@ -4426,17 +4434,8 @@ gst_matroska_demux_parse_id (GstMatroskaDemux * demux, guint32 id,
                 goto no_tracks;
             }
           }
-          if (G_UNLIKELY (demux->common.state
-                  == GST_MATROSKA_READ_STATE_HEADER)) {
-            demux->common.state = GST_MATROSKA_READ_STATE_DATA;
+          if (demux->first_cluster_offset == 0)
             demux->first_cluster_offset = demux->common.offset;
-            GST_DEBUG_OBJECT (demux, "signaling no more pads");
-            gst_element_no_more_pads (GST_ELEMENT (demux));
-            /* send initial segment - we wait till we know the first
-               incoming timestamp, so we can properly set the start of
-               the segment. */
-            demux->need_segment = TRUE;
-          }
           demux->cluster_time = GST_CLOCK_TIME_NONE;
           demux->cluster_offset = demux->common.offset;
           if (G_UNLIKELY (!demux->seek_first && demux->seek_block)) {
